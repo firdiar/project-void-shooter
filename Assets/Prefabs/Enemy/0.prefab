@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 5180170293284283356}
   - component: {fileID: 5180170293284283357}
   - component: {fileID: 5180170293284283354}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: plane
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -100,6 +100,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   health: 10
   attack: 5
+  isMoving: 1
   explosionEffect: {fileID: 8196243396141153, guid: 0559ad65decde4b4c94ca93f1220f229,
     type: 3}
   smokeEffect: {fileID: 2687642587708360962, guid: 51f5dd58735e2bb4e824c9eac7f56313,
@@ -165,7 +166,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5180170294707957085}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: GameObject
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -202,6 +203,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7219761536427366866, guid: 4acff76315ab3fe41a6e6e418f6cca1b,
+        type: 3}
+      propertyPath: m_Layer
+      value: 9
       objectReference: {fileID: 0}
     - target: {fileID: 7534839678168299910, guid: 4acff76315ab3fe41a6e6e418f6cca1b,
         type: 3}

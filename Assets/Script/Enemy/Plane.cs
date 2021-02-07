@@ -8,15 +8,17 @@ public class Plane : MonoBehaviour, IDamageAble
     [Header("Status")]
     public float health = 10;
     public int attack = 2;
-
+    [SerializeField] bool isMoving = false;
+    float movingLeap = 0;
+    Vector2 direction = Vector2.zero;
 
     [SerializeField] GameObject explosionEffect = null;
     [SerializeField] GameObject smokeEffect = null;
     [SerializeField] GameObject mask = null;
     [Header("Shooting")]
     [SerializeField] float cooldownShoot = 4;
-    [SerializeField] Transform spawnPlace = null;
-    [SerializeField] Projectile projectile = null;
+    [SerializeField]protected Transform spawnPlace = null;
+    [SerializeField]protected Projectile projectile = null;
 
     bool isFallDown = false;
 
@@ -37,16 +39,27 @@ public class Plane : MonoBehaviour, IDamageAble
             euler.z += Random.Range(-3f, 3f);
             transform.eulerAngles = euler;
         }
+
+        if (isMoving) {
+            if (movingLeap <= 0) {
+                movingLeap = 3;
+                direction = Random.Range(0f, 1f) < 0.5 ? Vector2.left : Vector2.right;
+            }
+            movingLeap -= Time.deltaTime;
+            transform.position += (Vector3)direction * Time.deltaTime * 4;
+        }
     }
 
-    void Shoot() {
+    protected virtual GameObject Shoot() {
         Projectile p = Instantiate(projectile, spawnPlace.position, Quaternion.identity);
         p.damage = attack;
+        return p.gameObject;
     }
 
     // Update is called once per frame
     void FallDown()
     {
+        isMoving = false;
         body.constraints = RigidbodyConstraints2D.None;
         CancelInvoke("Shoot");
 
@@ -84,9 +97,12 @@ public class Plane : MonoBehaviour, IDamageAble
     }
 
     void DestroyPlane() {
+        GameSceneManager.main.AddScore(attack);
         Instantiate(explosionEffect, transform.position, Quaternion.identity);
         Destroy(gameObject);
         ImageEffect.RipplePospProcessor.RippleCam(transform.position);
         ImageEffect.ChromaticAberration.AbrationCam(0.005f, 0.4f);
     }
+
+    
 }

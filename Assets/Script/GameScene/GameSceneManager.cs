@@ -12,6 +12,11 @@ public class EnemyType {
 
 public class GameSceneManager : MonoBehaviour
 {
+
+    public static GameSceneManager main = null;
+
+    public GameObject player = null;
+
     int totalProbability = 0;
     [SerializeField] EnemyType[] enemyType = new EnemyType[0];
 
@@ -19,17 +24,79 @@ public class GameSceneManager : MonoBehaviour
 
     [SerializeField] int wave = 0;
     [SerializeField] int costLeft = 0;
-
+    [SerializeField] int score = 0;
+    [SerializeField] AudioClip bgm = null;
     [Header("UI")]
     [SerializeField] Text waveText = null;
+    [SerializeField] Text scoreText = null;
+    [SerializeField] GameObject pause = null;
+    [SerializeField] GameObject over = null;
+    [SerializeField] GameObject finish = null;
 
     void Start()
     {
+        GtionProduction.GtionBGM.Play(bgm);
+        Physics2D.IgnoreLayerCollision(8, 9);
+        main = this;
         InvokeRepeating("Check", 2, 2);
         foreach (EnemyType e in enemyType)
         {
             totalProbability += e.probability;
         }
+
+        
+    }
+
+
+    public void PauseGame() {
+        Time.timeScale = 0;
+    }
+    public void ResumeGame()
+    {
+        Time.timeScale = 1;
+    }
+    public void ShowPause()
+    {
+        PauseGame();
+        pause.SetActive(true);
+    }
+    public void HidePause()
+    {
+        ResumeGame();
+        pause.SetActive(false);
+    }
+    public void ShowOver()
+    {
+        //PauseGame();
+        if (score > PlayerPrefs.GetInt("highscore", 25)) {
+            PlayerPrefs.SetInt("highscore", score);
+        }
+        over.SetActive(true);
+    }
+
+    public void AddScore(int scoreBonus) {
+        score += scoreBonus;
+        scoreText.text = "Score : " + score;
+    }
+
+    public void GotoMain()
+    {
+        ResumeGame();
+        GtionProduction.GtionLoading.openLayerLoading(() =>
+        {
+            GtionProduction.GtionLoading.startMoveScene("HomeScene");
+        });
+
+    }
+
+    public void Retry()
+    {
+        ResumeGame();
+        GtionProduction.GtionLoading.openLayerLoading(() =>
+        {
+            GtionProduction.GtionLoading.startMoveScene("GameScene");
+        });
+
     }
 
 
@@ -81,7 +148,7 @@ public class GameSceneManager : MonoBehaviour
         costLeft -= e.cost;
         Vector2 pos = transform.position + new Vector3(
                        (Random.value - 0.5f) * 137.6007f,
-                       (Random.value - 0.5f) * 50,
+                       (Random.value - 0.5f) * 45,
                        (Random.value - 0.5f) * 0
                     );
 
@@ -90,14 +157,6 @@ public class GameSceneManager : MonoBehaviour
         p.attack = wave * e.cost;
 
         enemy.Add(p.gameObject);
-    }
-
-    public void GamePause() { 
-    
-    }
-
-    public void GameOver() { 
-        
     }
 
     // Update is called once per frame

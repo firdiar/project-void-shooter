@@ -5,13 +5,14 @@ using ImageEffect;
 
 public class Ship : MonoBehaviour , IDamageAble
 {
-    GameSceneManager gameManager = null;
+    //[SerializeField]GameSceneManager gameManager = null;
 
     [Header("Camera")]
     [SerializeField]CameraShake camShake = null;
 
     [Header("UI Status")]
     [SerializeField] UnityEngine.UI.Text condition = null;
+    [SerializeField] UnityEngine.UI.Text ammo = null;
 
     [Header("Status")]
     [SerializeField] int health = 100;
@@ -28,7 +29,13 @@ public class Ship : MonoBehaviour , IDamageAble
     [SerializeField] Rigidbody2D projectilePrefabs = null;
     [SerializeField] GameObject smokeEffect = null;
     [SerializeField] float cooldownTime = 0.5f;
+    [SerializeField] int maxAmmo = 20;
+    [SerializeField] AudioSource audioSc = null;
+    float cdAmmo = 0;
+    int ammunition = 20;
     float cooldownShoot = 0;
+
+    
 
     // Start is called before the first frame update
     void Start()
@@ -39,7 +46,8 @@ public class Ship : MonoBehaviour , IDamageAble
     // Update is called once per frame
     void Update()
     {
-       
+        if (Time.timeScale == 0 || health <= 0)
+            return;
 
         //Movement
         if (Input.GetKey(KeyCode.D))
@@ -88,10 +96,17 @@ public class Ship : MonoBehaviour , IDamageAble
         Vector2 pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         RotateBody(cannon, (pos - (Vector2)transform.position).normalized, 10);
 
-
+        cdAmmo = Mathf.Max(0, cdAmmo - Time.deltaTime);
         cooldownShoot = Mathf.Max(0, cooldownShoot - Time.deltaTime);
-        if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Mouse0)) && cooldownShoot == 0)
+        if (ammunition == 0) {
+            ammo.text = "Ammo : Reload "+Mathf.CeilToInt(cdAmmo);
+            if(cdAmmo ==0)
+                ammunition = maxAmmo;
+        }
+            
+        if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Mouse0)) && cooldownShoot == 0 && ammunition > 0)
         {
+            
             cooldownShoot = cooldownTime;
             Instantiate(smokeEffect, projectileSpawnPos.position, Quaternion.identity);
             Rigidbody2D rb = Instantiate(projectilePrefabs, projectileSpawnPos.position, Quaternion.identity);
@@ -102,8 +117,8 @@ public class Ship : MonoBehaviour , IDamageAble
             camShake.StartShake();
             RipplePospProcessor.RippleCam(projectileSpawnPos.position);
             ChromaticAberration.AbrationCam(0.01f, 0.4f);
-
-            if(direction.x < 0) // impact ke kanan
+            audioSc.Play();
+            if (direction.x < 0) // impact ke kanan
             {
                 if (currentCode == KeyCode.A)//jika sedang ke kiri
                 {
@@ -144,7 +159,16 @@ public class Ship : MonoBehaviour , IDamageAble
             }
 
 
-            Debug.Log("Shooting");
+            ammunition--;
+
+            if (ammunition == 0)
+            {
+                ammo.text = "Ammo : Reload 5";
+                cdAmmo = 3;
+            }
+            else {
+                ammo.text = "Ammo : " + ammunition;
+            }
         }
 
         
@@ -173,6 +197,7 @@ public class Ship : MonoBehaviour , IDamageAble
         if (health <= 0)
         {
             InvokeRepeating("Explode", 0.5f, 0.4f);
+            GameSceneManager.main. ShowOver();
         }
     }
 
